@@ -1,0 +1,44 @@
+## experiment result
+T-model
+TP-model
+TA-model
+TA-model-joint
+TP-model-joint
+TAP-model
+TAP-model-joint
+TAP-model-CL-joint
+TA-model-CL-joint
+TP-model-CL-joint
+
+
+### pretrained 
+pretrained-model/en/BART/pytorch_model.bin
+pretrained-model/zh/BART/pytorch_model.bin
+pretrained-model/zh/phoneme_model/pytorch_model.bin
+### pretrained wav2vec
+pretrained-model/wav2vec_pretrained_model/zh/*.bin
+pretrained-model/wav2vec_pretrained_model/zh/*.pt
+pretrained-model/wav2vec_pretrained_model/en/*.bin
+
+# data
+# data1
+
+# data/zh
+
+data/en/LIBRISPEECH_CLEAN/audio-feature
+data/en/LIBRISPEECH_OTHER/audio-feature
+data/zh/MAGICDATA/audio-feature
+data/zh/AISHELL-1/audio-feature
+data/zh/AIDATATANG/audio-feature
+
+
+### wav2vec H5 file
+data/en/LIBRISPEECH_CLEAN/audio-feature/*.h5
+data/en/LIBRISPEECH_OTHER/audio-feature/*.h5
+data/zh/AISHELL-1/audio-feature/*.h5
+data/zh/AIDATATANG/audio-feature/*.h5
+data/zh/MAGICDATA/audio-feature/*.h5
+
+data/zh/AISHELL-1/audio-feature/train.list
+data/zh/AIDATATANG/audio-feature/train.list
+data/zh/MAGICDATA/audio-feature/train.list
