@@ -26,7 +26,7 @@ pretrained-model/wav2vec_pretrained_model/en/*.bin
 # data1
 
 data/zh
-data/zh.1
+# data/zh.1
 
 data/en/LIBRISPEECH_CLEAN/audio-feature
 data/en/LIBRISPEECH_OTHER/audio-feature

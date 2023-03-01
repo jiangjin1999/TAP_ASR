@@ -9,11 +9,11 @@
 #         --is_use_DDP \
 #         --current_dataset AIDATATANG \
 #         --batch_size 40
-export CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=2,3
 python -m torch.distributed.launch --nproc_per_node=2 --master_port=22346 model-trainer.py \
         --is_use_DDP \
         --current_dataset MAGICDATA \
-        --batch_size 80
+        --batch_size 55
 # export CUDA_VISIBLE_DEVICES=1,2,3
 # python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
 #         --is_use_DDP \

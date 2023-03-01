@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader, Dataset
 from torch.utils.tensorboard import SummaryWriter
 from torch.nn.parallel import DistributedDataParallel 
 from tqdm.auto import tqdm
-from transformers import (AdamW, AutoConfig, AutoModelForSeq2SeqLM,BertTokenizer,
+from transformers import (AdamW, AutoConfig, AutoModelForSeq2SeqLM,BertTokenizer,BartTokenizer,
                           AutoTokenizer, BertConfig, PreTrainedModel,BartForConditionalGeneration,
                           PreTrainedTokenizer, get_scheduler, set_seed)
 from transformers.modeling_outputs import Seq2SeqLMOutput
@@ -48,7 +48,9 @@ class Config(Tap):
     pwd: str = '/home/data/jiangjin/TAP_ASR/'
     is_use_DDP: bool = False
 
-    batch_size: int = 40
+    batch_size: int = 8
+    max_seq_length: int = 0
+    
 
 
     current_dataset: str = 'AISHELL-1'#'LIBRISPEECH_OTHER'#'LIBRISPEECH'#'LIBRISPEECH_CLEAN_100'#'AIDATATANG' #['AISHELL-1', 'AIDATATANG', 'thchs'][0]
@@ -84,13 +86,11 @@ class Config(Tap):
         language = 'zh'
         metric: str = 'cer'
         audio_encoder_input_dim: int = 1024
-        max_seq_length: int = 40
     if current_dataset in ['LIBRISPEECH_CLEAN', 'LIBRISPEECH_OTHER']:
         is_zh = False
         language = 'en'
         metric = 'wer'
         audio_encoder_input_dim = 768
-        max_seq_length: int = 100
 
         
     
@@ -1080,13 +1080,13 @@ def reset_config_parse(config):
         config.language = 'zh'
         config.metric: str = 'cer'
         config.audio_encoder_input_dim: int = 1024
-        config.max_seq_length: int = 40
+        # config.max_seq_length: int = 40
     if config.current_dataset in ['LIBRISPEECH_CLEAN', 'LIBRISPEECH_OTHER']:
         config.is_zh = False
         config.language = 'en'
         config.metric = 'wer'
         config.audio_encoder_input_dim: int = 768
-        config.max_seq_length: int = 100
+        # config.max_seq_length: int = 100
     
     config.model_type: str = ''
     if config.is_phoneme is True and config.is_audio is True:
@@ -1131,6 +1131,21 @@ def reset_config_parse(config):
     config.pretrained_model: str = config.pwd + 'pretrained-model/'+config.language+'/BART'
     config.phoneme_model_path: str = config.pwd + 'pretrained-model/'+config.language+'/phoneme_model'
     config.Model_config = AutoConfig.from_pretrained(config.pretrained_model)
+    
+    if config.current_dataset == 'AISHELL-1':
+        config.max_seq_length: int = 45
+    elif config.current_dataset == 'AIDATATANG':
+        config.max_seq_length: int = 45
+    elif config.current_dataset == 'MAGICDATA':
+        config.max_seq_length: int = 75
+    elif config.current_dataset == 'LIBRISPEECH_CLEAN':
+        config.max_seq_length: int = 200
+    elif config.current_dataset == 'LIBRISPEECH_OTHER':
+        config.max_seq_length: int = 256
+
+    
+    
+
 
 
 if __name__ == "__main__":
@@ -1174,6 +1189,10 @@ if __name__ == "__main__":
     else:
         MODEL_TYPE = AutoModelForSeq2SeqLM.from_config(config.Model_config)
 
+    if config.language == 'en':
+        TEXT_TOKENIZER = AutoTokenizer.from_pretrained(config.pretrained_model)
+    elif config.language == 'zh':
+        TEXT_TOKENIZER = BertTokenizer.from_pretrained(config.pretrained_model)
     if config.is_phoneme is True:
         phoneme_encoder_path = config.phoneme_model_path
         phoneme_config = BertConfig.from_pretrained(phoneme_encoder_path)
@@ -1195,7 +1214,7 @@ if __name__ == "__main__":
         config,
         text_processor=TextDataProcessor(
             config.text_data_dir, config),
-        text_tokenizer=BertTokenizer.from_pretrained(config.pretrained_model),
+        text_tokenizer=TEXT_TOKENIZER,
         model=MODEL_TYPE,
         phoneme_encoder=Phoneme_encoder,
         audio_encoder=Audio_encoder,
