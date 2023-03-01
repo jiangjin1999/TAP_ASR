@@ -10,6 +10,7 @@ TAP-model-CL-joint
 TA-model-CL-joint
 TP-model-CL-joint
 
+README.md
 
 ### pretrained 
 pretrained-model/en/BART/pytorch_model.bin
