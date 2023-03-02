@@ -15,11 +15,11 @@
 #         --is_phoneme \
 #         --is_audio \
 #         --is_jointly_train
-export CUDA_VISIBLE_DEVICES=0,1,2,3
-python -m torch.distributed.launch --nproc_per_node=4 --master_port=22346 model-trainer.py \
+export CUDA_VISIBLE_DEVICES=0,1
+python -m torch.distributed.launch --nproc_per_node=2 --master_port=22346 model-trainer.py \
         --is_use_DDP \
         --current_dataset MAGICDATA \
-        --batch_size 40 \
+        --batch_size 24 \
         --is_audio \
         --is_phoneme \
 #         --is_jointly_train
