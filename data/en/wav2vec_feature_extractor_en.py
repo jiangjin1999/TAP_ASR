@@ -13,6 +13,7 @@ import torchaudio
 from transformers import (
     Wav2Vec2Model,
     Wav2Vec2Processor,
+    Wav2Vec2ForCTC,
 )
 from tqdm.auto import tqdm
 from torch.utils.data import DataLoader, Dataset
@@ -66,19 +67,9 @@ class AudioDataProcessor(DataProcessor):
 
     def _read(self, file: str) -> List[AudioInputExample]:
         examples = []
-        examples = []
-        import json
         with open(file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            keys_list = list(data['utts'].keys())
-            examples = []
-            for key in keys_list:
-                id = key
-                file = data['utts'][id]['input']['path']
-                text = data['utts'][id]['output']['text']
-                example = AudioInputExample(id, file, text) 
-                examples.append(example)
-
+            data = f.readlines()
+            examples = [AudioInputExample(**self.string2dict(item)) for item in data]
         return examples
 
     def _load_dataset(self,) -> Dataset:
@@ -90,8 +81,8 @@ class AudioDataProcessor(DataProcessor):
     def get_train_dataset(self) -> Dataset:
         return self._load_dataset()
     
-    # def string2dict(self, item: str) -> List:
-    #     return {"id":item.split('\"')[3], "file":item.split('\"')[7], "text": item.split('\"')[11]}
+    def string2dict(self, item: str) -> List:
+        return {"id":item.split('\"')[3], "file":'/home/users/jiangjin/jiangjin_bupt/Python/ASR/wenet/examples/librispeech/s0/'+item.split('\"')[7], "text": item.split('\"')[11]}
         
     # def rewrite_audio_path(sefl, file_path: str):
     #     file_path = file_path.split('LibriSpeech')
@@ -105,10 +96,11 @@ class Config(Tap):
     # max_seq_length: int = 64
     # audio_max_length: int = 65000
     wav2vec_pretrained_model = '/home/data/jiangjin/TAP_ASR/pretrained-model/wav2vec_pretrained_model/en/'
-    f_wav2vec_path= '' 
-    audio_data_dir: str =  ''#'/home/jiangjin/ASR_CORRECTION/ASR/fairseq/examples/speech_recognition/datasets/preprocessed_data/train.json'
+    f_wav2vec_path= '/home/data/jiangjin/TAP_ASR/data/en/LIBRISPEECH_CLEAN/audio-feature/wav2vec_feature.h5' 
+    audio_data_dir: str =  '/home/data/jiangjin/TAP_ASR/data/en/LIBRISPEECH_CLEAN/audio-feature/train.list'#'/home/jiangjin/ASR_CORRECTION/ASR/fairseq/examples/speech_recognition/datasets/preprocessed_data/train.json'
     batch_size = 48
     max_length: int = 130000
+    audio_data_path = '/home/data/jiangjin/TAP_ASR/data/zh/AIDATATANG/audio-feature/train.list' #'/home/users/jiangjin/jiangjin_bupt/Python/ASR/wenet/examples/librispeech/s0/'
     
     
     
@@ -209,8 +201,8 @@ class Extractor:
             f_wav2vec = h5py.File(self.f_wav2vec_path, 'a')
         for i in range(len(speechs)):
             # print(i)
-            if self.config.local_rank=='0':
-                f_wav2vec.create_dataset(audio_examples[i].id, data=speechs[i].detach().cpu().numpy())
+
+            f_wav2vec.create_dataset(audio_examples[i].id, data=speechs[i].detach().cpu().numpy())
         f_wav2vec.close()
 
         
@@ -246,6 +238,6 @@ if __name__ == "__main__":
         audio_tokenizer=Wav2Vec2Processor.from_pretrained(
             config.wav2vec_pretrained_model),
         wav2vec_model=Wav2Vec2Model.from_pretrained(config.wav2vec_pretrained_model),   
-        f_wav2vec_path=
+        f_wav2vec_path=config.f_wav2vec_path,
     )
     extractor.result_save()

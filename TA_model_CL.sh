@@ -7,7 +7,7 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=2234 model-t
         --is_audio \
         --is_jointly_train \
         --is_CL_train
-        # --is_limited_CL_train
+        # --limited_CL_train_epoch 5
 export CUDA_VISIBLE_DEVICES=1,2,3
 python -m torch.distributed.launch --nproc_per_node=3 --master_port=22345 model-trainer.py \
         --is_use_DDP \
@@ -16,7 +16,7 @@ python -m torch.distributed.launch --nproc_per_node=3 --master_port=22345 model-
         --is_audio \
         --is_jointly_train \
         --is_CL_train
-        # --is_limited_CL_train
+        # --limited_CL_train_epoch 5
 export CUDA_VISIBLE_DEVICES=1,2,3
 python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
         --is_use_DDP \
@@ -25,7 +25,7 @@ python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-
         --is_audio \
         --is_jointly_train \
         --is_CL_train
-        # --is_limited_CL_train
+        # --limited_CL_train_epoch 5
 export CUDA_VISIBLE_DEVICES=1,2,3
 python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
         --is_use_DDP \
@@ -34,7 +34,7 @@ python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-
         --is_audio \
         --is_jointly_train \
         --is_CL_train
-        # --is_limited_CL_train
+        # --limited_CL_train_epoch 5
 export CUDA_VISIBLE_DEVICES=1,2,3
 python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
         --is_use_DDP \
@@ -43,4 +43,4 @@ python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-
         --is_audio \
         --is_jointly_train \
         --is_CL_train
-        # --is_limited_CL_train
+        # --limited_CL_train_epoch 5

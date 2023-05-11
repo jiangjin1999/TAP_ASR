@@ -27,7 +27,8 @@ from torch.nn.parallel import DistributedDataParallel
 from tqdm.auto import tqdm
 from transformers import (AdamW, AutoConfig, AutoModelForSeq2SeqLM,BertTokenizer,BartTokenizer,
                           AutoTokenizer, BertConfig, PreTrainedModel,BartForConditionalGeneration,
-                          PreTrainedTokenizer, get_scheduler, set_seed)
+                          PreTrainedTokenizer, set_seed)
+from transformers.optimization import get_scheduler
 from transformers.modeling_outputs import Seq2SeqLMOutput
 from transformers.models import bart
 
@@ -44,7 +45,7 @@ from utils import CustomSchedule, EarlyStopping, Similarity
 
 
 class Config(Tap):
-    seed: int = 2022
+    seed: int = 2023
     pwd: str = '/home/data/jiangjin/TAP_ASR/'
     is_use_DDP: bool = False
 
@@ -53,7 +54,7 @@ class Config(Tap):
     
 
 
-    current_dataset: str = 'AISHELL-1'#'LIBRISPEECH_OTHER'#'LIBRISPEECH'#'LIBRISPEECH_CLEAN_100'#'AIDATATANG' #['AISHELL-1', 'AIDATATANG', 'thchs'][0]
+    current_dataset: str = 'LIBRISPEECH_CLEAN'#'LIBRISPEECH_OTHER'#'LIBRISPEECH'#'LIBRISPEECH_CLEAN_100'#'AIDATATANG' #['AISHELL-1', 'AIDATATANG', 'thchs'][0]
 
     is_phoneme: bool = False #False
     is_audio: bool = False #False
@@ -61,7 +62,7 @@ class Config(Tap):
     is_jointly_train: bool = False #False
     is_jointly_train_zero: bool = False
     is_CL_train: bool = False #False # 是否使用对比学习loss训练。
-    is_limited_CL_train: bool = False #False
+    limited_CL_train_epoch: int = 0 #False
     
     
     lambda_text: int = 1
@@ -151,7 +152,7 @@ class Config(Tap):
     gradient_accumulation_steps: int = 1
     epochs: int = 100
 
-    early_stop = EarlyStopping(patience=7)
+    early_stop = EarlyStopping(patience=5)
     device: str = 'cuda'
     early_stop_flag: str = False
 
@@ -633,7 +634,7 @@ class Trainer:
             # self.optimizer.zero_grad()    
             self.context_data.total_loss = (self.context_data.loss + self.context_data.audio_loss + self.context_data.phoneme_loss)
 
-            if self.config.is_limited_CL_train is True:
+            if self.config.limited_CL_train_epoch != 0:
                 if self.config.is_jointly_train is True:
                     if self.context_data.epoch<5:
                         self.train_jointly()
@@ -1060,7 +1061,10 @@ class Trainer:
         with open(config.test_result_dir+'T_modal_'+test_data_name+'.txt', 'w') as f_result:
             data_output_list = []
             for item_pred, item_label in zip(all_decoded_preds, all_decoded_labels):
-                data_output_list.append(item_pred + ' ' + item_label + '\n') 
+                if 'LIBRISPEECH' in test_data_name:
+                    data_output_list.append(item_pred + '\t' + item_label + '\n') 
+                else:
+                    data_output_list.append(item_pred + ' ' + item_label + '\n') 
             f_result.writelines(data_output_list)
 
 
@@ -1139,7 +1143,7 @@ def reset_config_parse(config):
     elif config.current_dataset == 'MAGICDATA':
         config.max_seq_length: int = 75
     elif config.current_dataset == 'LIBRISPEECH_CLEAN':
-        config.max_seq_length: int = 200
+        config.max_seq_length: int = 150
     elif config.current_dataset == 'LIBRISPEECH_OTHER':
         config.max_seq_length: int = 256
 

@@ -60,6 +60,7 @@ class TextDataProcessor(DataProcessor):
     def _read(self, file: str) -> List[TextInputExample]:
         with open(file, 'r', encoding='utf-8') as f:
             data = f.readlines()
+            data = data[1:]
             if 'LIBRISPEECH' in file:
                 # print('data processor for librispeech')
                 example = [TextInputExample(self.en_utt_process(item.strip().split('\t')[0]), item.strip().split('\t')[1], item.strip().split('\t')[2]) for item in data]
@@ -69,6 +70,7 @@ class TextDataProcessor(DataProcessor):
             # a = example
             # example = random.shuffle(a)
             # return example
+            # example = example[1:]
             return example #[0:1000]
             
     def en_utt_process(self, item):

@@ -22,12 +22,13 @@ pretrained-model/wav2vec_pretrained_model/zh/*.bin
 pretrained-model/wav2vec_pretrained_model/zh/*.pt
 pretrained-model/wav2vec_pretrained_model/en/*.bin
 
-# data
+data
 # data1
 
 data/zh
 # data/zh.1
 
+data/en/
 data/en/LIBRISPEECH_CLEAN/audio-feature
 data/en/LIBRISPEECH_OTHER/audio-feature
 data/zh/MAGICDATA/audio-feature
