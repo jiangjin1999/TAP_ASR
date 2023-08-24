@@ -9,9 +9,11 @@ TAP-model-joint
 TAP-model-CL-joint
 TA-model-CL-joint
 TP-model-CL-joint
+TA-model-joint-CL-limited
+TAP-model-joint-CL-limited
+TP-model-joint-CL-limited
 
-README.md
-# README1.md
+
 
 ### pretrained 
 pretrained-model/en/BART/pytorch_model.bin

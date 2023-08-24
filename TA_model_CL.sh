@@ -26,20 +26,21 @@ python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-
         --is_jointly_train \
         --is_CL_train
         # --limited_CL_train_epoch 5
-export CUDA_VISIBLE_DEVICES=1,2,3
-python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=22346 model-trainer.py \
+        --seed 20230514 \
         --is_use_DDP \
         --current_dataset LIBRISPEECH_CLEAN \
-        --batch_size 80 \
+        --batch_size 8 \
         --is_audio \
         --is_jointly_train \
-        --is_CL_train
-        # --limited_CL_train_epoch 5
-export CUDA_VISIBLE_DEVICES=1,2,3
-python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
+        --is_CL_train \
+        --limited_CL_train_epoch 2
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=22346 model-trainer.py \
         --is_use_DDP \
         --current_dataset LIBRISPEECH_OTHER \
-        --batch_size 80 \
+        --batch_size 10\
         --is_audio \
         --is_jointly_train \
         --is_CL_train

@@ -52,15 +52,13 @@ class Config(Tap):
     batch_size: int = 8
     max_seq_length: int = 0
     
-
-
     current_dataset: str = 'LIBRISPEECH_CLEAN'#'LIBRISPEECH_OTHER'#'LIBRISPEECH'#'LIBRISPEECH_CLEAN_100'#'AIDATATANG' #['AISHELL-1', 'AIDATATANG', 'thchs'][0]
 
     is_phoneme: bool = False #False
     is_audio: bool = False #False
 
     is_jointly_train: bool = False #False
-    is_jointly_train_zero: bool = False
+
     is_CL_train: bool = False #False # 是否使用对比学习loss训练。
     limited_CL_train_epoch: int = 0 #False
     
@@ -70,7 +68,7 @@ class Config(Tap):
     lambda_audio: int = 1
     
     lambda_CL_TA = 1
-    # lambda_CL_AP = 1
+    lambda_CL_AP = 1
     lambda_CL_PT = 1
     lambda_CL = 1
 
@@ -98,28 +96,43 @@ class Config(Tap):
     # 文件路径 参数配置
     model_type: str = ''
     if is_phoneme is True and is_audio is True:
-        if is_jointly_train is True:
-            if is_CL_train is True:
-                model_type = model_type + 'TAP-model-CL-joint'
-            else:
-                model_type = model_type + 'TAP-model-joint'
-        else:
+        if is_jointly_train is True and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TAP-model-joint-CL'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TAP-model-joint-CL-limited'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch==0:
+            model_type = model_type + 'TAP-model-joint'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TAP-model-CL'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TAP-model-CL-limited'
+        elif is_jointly_train is False and is_CL_train is False and limited_CL_train_epoch==0:
             model_type = model_type + 'TAP-model'
     elif is_phoneme is True:
-        if is_jointly_train is True:
-            if is_CL_train is True:
-                model_type = model_type + 'TP-model-CL-joint'
-            else:
-                model_type = model_type + 'TP-model-joint'
-        else:
+        if is_jointly_train is True and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TP-model-joint-CL'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TP-model-joint-CL-limited'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch==0:
+            model_type = model_type + 'TP-model-joint'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TP-model-CL'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TP-model-CL-limited'
+        elif is_jointly_train is False and is_CL_train is False and limited_CL_train_epoch==0:
             model_type = model_type + 'TP-model'
     elif is_audio is True:
-        if is_jointly_train is True:
-            if is_CL_train is True:
-                model_type = model_type + 'TA-model-CL-joint'
-            else:
-                model_type = model_type + 'TA-model-joint'
-        else:
+        if is_jointly_train is True and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TA-model-joint-CL'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TA-model-joint-CL-limited'
+        elif is_jointly_train is True and is_CL_train is False and limited_CL_train_epoch==0:
+            model_type = model_type + 'TA-model-joint'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch==0:
+            model_type = model_type + 'TA-model-CL'
+        elif is_jointly_train is False and is_CL_train is True and limited_CL_train_epoch!=0:
+            model_type = model_type + 'TA-model-CL-limited'
+        elif is_jointly_train is False and is_CL_train is False and limited_CL_train_epoch==0:
             model_type = model_type + 'TA-model'
     else: 
         model_type = model_type + 'T-model'
@@ -152,7 +165,7 @@ class Config(Tap):
     gradient_accumulation_steps: int = 1
     epochs: int = 100
 
-    early_stop = EarlyStopping(patience=5)
+    early_stop = EarlyStopping(patience=3)
     device: str = 'cuda'
     early_stop_flag: str = False
 
@@ -636,7 +649,7 @@ class Trainer:
 
             if self.config.limited_CL_train_epoch != 0:
                 if self.config.is_jointly_train is True:
-                    if self.context_data.epoch<5:
+                    if self.context_data.epoch<self.config.limited_CL_train_epoch:
                         self.train_jointly()
             else:
                 if self.config.is_jointly_train is True:
@@ -772,9 +785,9 @@ class Trainer:
                 PT_CL_loss = loss_fct(cos_sim, labels)
             # 对三个模态之间的loss加权求和
             self.context_data.CL_loss =  self.config.lambda_CL_TA * TA_CL_loss \
-                + self.config.lambda_CL_PT * PT_CL_loss
-                #+ self.config.lambda_CL_AP * AP_CL_loss \
-            if self.config.is_jointly_train_zero is True:
+                + self.config.lambda_CL_PT * PT_CL_loss \
+                + self.config.lambda_CL_AP * AP_CL_loss 
+            if self.config.is_jointly_train is False:
                 self.context_data.total_loss_CL = self.context_data.total_loss * 0 + self.config.lambda_CL * self.context_data.CL_loss
             else:
                 self.context_data.total_loss_CL = self.context_data.total_loss + self.config.lambda_CL * self.context_data.CL_loss
@@ -879,7 +892,11 @@ class Trainer:
         else:
             os.makedirs(path)
         if self.config.is_use_DDP is True:
-            torch.save(self.model.module.state_dict(), path+'/checkpoint_best.pt')
+            torch.save(self.model.module.state_dict(), path+'/epoch'+str(self.context_data.epoch)+'checkpoint_best.pt')
+            if config.is_audio is True:
+                torch.save(self.audio_encoder.module.state_dict(), path+'/epoch'+str(self.context_data.epoch)+'audio_encoder_checkpoint_best.pt')
+            if config.is_phoneme is True:
+                torch.save(self.phoneme_encoder.module.state_dict(), path+'/epoch'+str(self.context_data.epoch)+'phoneme_encoder_checkpoint_best.pt')
         else:
             torch.save(self.model.state_dict(), path+'/checkpoint_best.pt')
 
@@ -1094,29 +1111,50 @@ def reset_config_parse(config):
     
     config.model_type: str = ''
     if config.is_phoneme is True and config.is_audio is True:
-        if config.is_jointly_train is True:
-            if config.is_CL_train is True:
-                config.model_type = config.model_type + 'TAP-model-CL-joint'
-            else:
-                config.model_type = config.model_type + 'TAP-model-joint'
-        else:
+        if config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TAP-model-joint-CL'
+        elif config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TAP-model-joint-CL-limited'
+        elif config.is_jointly_train is True and config.is_CL_train is False and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TAP-model-joint'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TAP-model-CL'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TAP-model-CL-limited'
+        elif config.is_jointly_train is False and config.is_CL_train is False and config.limited_CL_train_epoch==0:
             config.model_type = config.model_type + 'TAP-model'
+        else:
+            assert 1==2
     elif config.is_phoneme is True:
-        if config.is_jointly_train is True:
-            if config.is_CL_train is True:
-                config.model_type = config.model_type + 'TP-model-CL-joint'
-            else:
-                config.model_type = config.model_type + 'TP-model-joint'
-        else:
+        if config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TP-model-joint-CL'
+        elif config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TP-model-joint-CL-limited'
+        elif config.is_jointly_train is True and config.is_CL_train is False and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TP-model-joint'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TP-model-CL'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TP-model-CL-limited'
+        elif config.is_jointly_train is False and config.is_CL_train is False and config.limited_CL_train_epoch==0:
             config.model_type = config.model_type + 'TP-model'
-    elif config.is_audio is True:
-        if config.is_jointly_train is True:
-            if config.is_CL_train is True:
-                config.model_type = config.model_type + 'TA-model-CL-joint'
-            else:
-                config.model_type = config.model_type + 'TA-model-joint'
         else:
+            assert 1==2
+    elif config.is_audio is True:
+        if config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TA-model-joint-CL'
+        elif config.is_jointly_train is True and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TA-model-joint-CL-limited'
+        elif config.is_jointly_train is True and config.is_CL_train is False and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TA-model-joint'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch==0:
+            config.model_type = config.model_type + 'TA-model-CL'
+        elif config.is_jointly_train is False and config.is_CL_train is True and config.limited_CL_train_epoch!=0:
+            config.model_type = config.model_type + 'TA-model-CL-limited'
+        elif config.is_jointly_train is False and config.is_CL_train is False and config.limited_CL_train_epoch==0:
             config.model_type = config.model_type + 'TA-model'
+        else:
+            assert 1==2
     else: 
         config.model_type = config.model_type + 'T-model'
     

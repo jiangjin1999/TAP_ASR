@@ -20,17 +20,10 @@ python -m torch.distributed.launch --nproc_per_node=2 --master_port=2236 model-t
         --batch_size 40 \
         --is_phoneme \
         # --is_jointly_train
-# export CUDA_VISIBLE_DEVICES=1,2,3
-# python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
-#         --is_use_DDP \
-#         --current_dataset LIBRISPEECH_CLEAN \
-#         --batch_size 80 \
-#         --is_phoneme \
-#         --is_jointly_train
-# export CUDA_VISIBLE_DEVICES=1,2,3
-# python -m torch.distributed.launch --nproc_per_node=3 --master_port=22346 model-trainer.py \
-#         --is_use_DDP \
-#         --current_dataset LIBRISPEECH_OTHER \
-#         --batch_size 80 \
-#         --is_phoneme \
-#         --is_jointly_train
+export CUDA_VISIBLE_DEVICES=0,1,2,3
+python -m torch.distributed.launch --nproc_per_node=4 --master_port=22346 model-trainer.py \
+        --is_use_DDP \
+        --current_dataset LIBRISPEECH_CLEAN \
+        --batch_size 10 \
+        --is_phoneme \
+        # --is_jointly_train
