@@ -108,3 +108,11 @@ bash TAP_CL_model.sh
 
 
 ## dataset statistics
+Statistics of the four datasets (Train/Dev/Test). Average length is the sentence average length of ASR reference. Error rate is the percentage of sentences with errors. LIBRI-CLEAN means LIBRISPEECH-CLEAN dataset.
+
+| Dataset     | Sentents Num       | Average length    | Error Rate       |
+|-------------|--------------------|-------------------|------------------|
+| AISHELL-1   | 120098/14326/7176 | 15.41/15.33/15.6  | 34.42/32.54/37.05|
+| AIDATATANG  | 164905/24216/48144| 10.9/10.69/10.74  | 31.61/29.84/31.96|
+| MAGICDATA   | 573478/9124/24279 | 10.89/10.87/10.85 | 41.65/45.3/41.25 |
+| LIBRI-CLEAN | 28539/2703/2620   | 34.69/20.13/20.07 | 84.85/35.44/36.37|
