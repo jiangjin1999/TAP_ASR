@@ -1,6 +1,6 @@
 # Cross Modal Training ASR Error Correction With Contrastive Learning
 
-This the office code for the paper [ICASSP 2024] [Cross Modal Training for ASR Error Correction With Contrastive Learning](https://arxiv.org/abs/).
+This is the office code for the paper [ICASSP 2024] [Cross Modal Training for ASR Error Correction With Contrastive Learning](https://arxiv.org/abs/).
 
 
 # Environment
